@@ -295,9 +295,9 @@
 )
 
 (defrule assert-unprinted
-	(score ?nama point ?)
+	(score ?nama point ?point)
 =>
-	(assert (unprinted ?nama)))
+	(assert (unprinted ?nama ?point)))
 
 (defrule retract-print-sorted
   (declare (salience -10))
@@ -307,13 +307,33 @@
 
 (defrule print-terdekat
 	(not (print-sorted))
-	?u <- (unprinted ?nama)
+	?u <- (unprinted ?nama 4)
 	(score ?nama point ?point)
 	(score ?nama jarak ?jarak)
 	(forall (and (unprinted ?n) (score ?n jarak ?r))
 			(test (>= ?r ?jarak)))
 =>
 	(retract ?u)
-	(if (= ?point 4)
-		then
-		(printout t ?nama " " ?jarak crlf)))
+	(printout t ?nama " " ?jarak crlf))
+
+(defrule print-terdekat3
+	(not (print-sorted))
+	?u <- (unprinted ?nama 3|2)
+	(score ?nama point ?point)
+	(score ?nama jarak ?jarak)
+	(forall (and (unprinted ?n) (score ?n jarak ?r))
+			(test (>= ?r ?jarak)))
+=>
+	(retract ?u)
+	(printout t ?nama " " ?jarak crlf))
+
+(defrule print-terdekat0
+	(not (print-sorted))
+	?u <- (unprinted ?nama 1)
+	(score ?nama point ?point)
+	(score ?nama jarak ?jarak)
+	(forall (and (unprinted ?n) (score ?n jarak ?r))
+			(test (>= ?r ?jarak)))
+=>
+	(retract ?u)
+	(printout t ?nama " " ?jarak crlf))
