@@ -148,14 +148,14 @@
 
 ; preprocessing minimum budget
 (defrule prepminbudget1
-	(declare (salience 100))
+	
 	?f <- (user minBudget "")
 =>
 	(retract ?f)
 	(assert (user minBudget 0))
 )
 (defrule prepminbudget2
-	(declare (salience 100))
+	
 	?f <- (user minBudget ?n)
 	(test (eq (type ?n) STRING))
 =>
@@ -165,14 +165,14 @@
 
 ; preprocessing maximum budget
 (defrule prepmaxbudget1
-	(declare (salience 100))
+	
 	?f <- (user maxBudget "")
 =>
 	(retract ?f)
 	(assert (user maxBudget 9999))
 )
 (defrule prepmaxbudget2
-	(declare (salience 100))
+	
 	?f <- (user maxBudget ?n)
 	(test (eq (type ?n) STRING))
 =>
@@ -182,14 +182,14 @@
 
 ; preprocessing latitude
 (defrule preplatitude1
-	(declare (salience 100))
+	
 	?f <- (user latitude "")
 =>
 	(retract ?f)
 	(assert (user latitude -6.890621))
 )
 (defrule preplatitude2
-	(declare (salience 100))
+	
 	?f <- (user latitude ?n)
 	(test (eq (type ?n) STRING))
 =>
@@ -199,14 +199,14 @@
 
 ; preprocessing longitude
 (defrule preplongitude1
-	(declare (salience 100))
+	
 	?f <- (user longitude "")
 =>
 	(retract ?f)
 	(assert (user longitude 107.609543))
 )
 (defrule preplongitude2
-	(declare (salience 100))
+	
 	?f <- (user longitude ?n)
 	(test (eq (type ?n) STRING))
 =>
@@ -240,7 +240,7 @@
 ; penilaian kriteria isSmoker
 (defrule checksmoke
 	(user isSmoker ?userSmoker)
-	(restaurant ?restaurantName isSmoker ?userSmoker)
+	(or (restaurant ?restaurantName isSmoker ?userSmoker) (test (eq ?userSmoker "")))
 	?fs <- (score ?restaurantName point ?n)
 	?fc <- (checklist ?restaurantName cekIsSmoker "False")
 =>
@@ -271,7 +271,7 @@
 ; penilaian kriteria dresscode
 (defrule checkdresscode
 	(user dresscode ?userDresscode)
-	(restaurant ?restaurantName dresscode ?userDresscode)
+	(or (restaurant ?restaurantName dresscode ?userDresscode) (test (eq ?userDresscode "")))
 	?fs <- (score ?restaurantName point ?n)
 	?fc <- (checklist ?restaurantName cekDresscode "False")
 =>
@@ -284,7 +284,7 @@
 ; penilaian kriteria hasWifi
 (defrule checkwifi
 	(user hasWifi ?userWifi)
-	(restaurant ?restaurantName hasWifi ?userWifi)
+	(or (restaurant ?restaurantName hasWifi ?userWifi) (test (eq ?userWifi "")))
 	?fs <- (score ?restaurantName point ?n)
 	?fc <- (checklist ?restaurantName cekHasWifi "False")
 =>
@@ -295,9 +295,9 @@
 )
 
 (defrule assert-unprinted
-	(score ?nama point ?)
+	(score ?nama point ?point)
 =>
-	(assert (unprinted ?nama)))
+	(assert (unprinted ?nama ?point)))
 
 (defrule retract-print-sorted
   (declare (salience -10))
@@ -307,8 +307,30 @@
 
 (defrule print-terdekat
 	(not (print-sorted))
-	?u <- (unprinted ?nama)
-	; (score ?nama point 4)
+	?u <- (unprinted ?nama 4)
+	(score ?nama point ?point)
+	(score ?nama jarak ?jarak)
+	(forall (and (unprinted ?n) (score ?n jarak ?r))
+			(test (>= ?r ?jarak)))
+=>
+	(retract ?u)
+	(printout t ?nama " " ?jarak crlf))
+
+(defrule print-terdekat3
+	(not (print-sorted))
+	?u <- (unprinted ?nama 3|2)
+	(score ?nama point ?point)
+	(score ?nama jarak ?jarak)
+	(forall (and (unprinted ?n) (score ?n jarak ?r))
+			(test (>= ?r ?jarak)))
+=>
+	(retract ?u)
+	(printout t ?nama " " ?jarak crlf))
+
+(defrule print-terdekat0
+	(not (print-sorted))
+	?u <- (unprinted ?nama 1)
+	(score ?nama point ?point)
 	(score ?nama jarak ?jarak)
 	(forall (and (unprinted ?n) (score ?n jarak ?r))
 			(test (>= ?r ?jarak)))
