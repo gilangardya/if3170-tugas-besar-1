@@ -8,7 +8,8 @@
 ;; VARIABEL GLOBAL ;;
 (defglobal
   ?*dBumi* = 12742
-  ?*plemen* = 0.017453292519943295)
+  ?*plemen* = 0.017453292519943295
+  ?*nPrint* = 3)
 
 ;; FUNGSI ANTARA UNTUK MENCARI JARAK ANTAR TITIK ;;
 (deffunction aDistance (?lat1 ?long1 ?lat2 ?long2)
@@ -315,41 +316,66 @@
   (retract ?f))
 
 ;; RULE UNTUK MENCETAK URUTAN ;;
+(defrule initial-print-number
+  =>
+  (assert (print-number 0)))
+
+(defrule print-message
+  (declare (salience -50))
+  (user name ?uName)
+  =>
+  (printout t crlf "Hello " ?uName ", here is our recommendation : " crlf))
+
 (defrule print-terdekat4
   "Mencetak urutan dengan skor rekomendasi 4"
   (declare (salience -150))
   (not (print-sorted4))
   ?u <- (unprinted4 ?nama)
+  ?fn <- (print-number ?pn)
+  (test (< ?pn ?*nPrint*))
   (score ?nama point ?point)
   (score ?nama jarak ?jarak)
   (forall (and (unprinted4 ?n) (score ?n jarak ?r))
       (test (>= ?r ?jarak)))
   =>
+  (retract ?fn)
   (retract ?u)
-  (printout t ?nama " " ?jarak " " ?point crlf))
+  (assert (print-number (+ 1 ?pn)))
+  (bind ?newpn (+ 1 ?pn))
+  (printout t ?newpn ". " ?nama " : Very recommendable (Distance = " ?jarak " km)" crlf))
 
 (defrule print-terdekat32
   "Mencetak urutan dengan skor rekomendasi 3 dan 2"
   (declare (salience -250))
   (not (print-sorted32))
   ?u <- (unprinted32 ?nama)
+  ?fn <- (print-number ?pn)
+  (test (< ?pn ?*nPrint*))
   (score ?nama point ?point)
   (score ?nama jarak ?jarak)
   (forall (and (unprinted32 ?n) (score ?n jarak ?r))
       (test (>= ?r ?jarak)))
   =>
+  (retract ?fn)
   (retract ?u)
-  (printout t ?nama " " ?jarak " " ?point crlf))
+  (assert (print-number (+ 1 ?pn)))
+  (bind ?newpn (+ 1 ?pn))
+  (printout t ?newpn ". " ?nama " : Recommendable (Distance = " ?jarak " km)" crlf))
 
 (defrule print-terdekat10
   "Mencetak urutan dengan skor rekomendasi 1 dan 0"
   (declare (salience -350))
   (not (print-sorted10))
   ?u <- (unprinted10 ?nama)
+  ?fn <- (print-number ?pn)
+  (test (< ?pn ?*nPrint*))
   (score ?nama point ?point)
   (score ?nama jarak ?jarak)
   (forall (and (unprinted10 ?n) (score ?n jarak ?r))
       (test (>= ?r ?jarak)))
   =>
+  (retract ?fn)
   (retract ?u)
-  (printout t ?nama " " ?jarak " " ?point crlf))
+  (assert (print-number (+ 1 ?pn)))
+  (bind ?newpn (+ 1 ?pn))
+  (printout t ?newpn ". " ?nama " : Not recommendable (Distance = " ?jarak " km)" crlf))
