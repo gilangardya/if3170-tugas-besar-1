@@ -1,15 +1,17 @@
-;;;
-;;;
-;;; SISTEM REKOMENDASI RESTORAN
-;;;
-;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; KELOMPOK defun              ;;;;
+;;;                             ;;;;
+;;; SISTEM REKOMENDASI RESTORAN ;;;;
+;;;                             ;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; variabel global
+;; VARIABEL GLOBAL ;;
 (defglobal
   ?*dBumi* = 12742
-  ?*plemen* = 0.017453292519943295)
+  ?*plemen* = 0.017453292519943295
+  ?*nPrint* = 3)
 
-; fungsi antara untuk distance
+;; FUNGSI ANTARA UNTUK MENCARI JARAK ANTAR TITIK ;;
 (deffunction aDistance (?lat1 ?long1 ?lat2 ?long2)
   (+ 0.5
      (/ (cos (* (- ?lat2 ?lat1) ?*plemen*)) (- 0 2))
@@ -17,13 +19,13 @@
         (cos (* ?lat2 ?*plemen*))
         (/ (- 1 (cos (* (- ?long2 ?long1) ?*plemen*))) 2))))
 
-; fungsi untuk menghitung jarak
+;; FUNGSI UNTUK MENCARI JARAK ANTAR TITIK ;;
 (deffunction distance (?lat1 ?long1 ?lat2 ?long2)
   (* ?*dBumi* (asin (sqrt (aDistance ?lat1 ?long1 ?lat2 ?long2)))))
 
-; fakta awal tentang restoran
+;; FAKTA AWAL TENTANG RESTORAN ;;
 (defrule initialrestaurant
-=>
+  =>
   (assert (print-sorted4))
   (assert (print-sorted32))
   (assert (print-sorted10))
@@ -108,12 +110,11 @@
   (assert (restaurant "J" dresscode "casual"))
   (assert (restaurant "J" hasWifi "True"))
   (assert (restaurant "J" latitude -6.2769732))
-  (assert (restaurant "J" longitude 106.775133))
-)
+  (assert (restaurant "J" longitude 106.775133)))
   
-; input user  
+;; INPUT USER ;;
 (defrule userinput
-=>
+  =>
   (printout t "What is your name? ")
   (bind ?inputName (readline))
   
@@ -145,115 +146,101 @@
             (user dresscode ?inputDresscode) 
             (user hasWifi ?inputWifi) 
             (user latitude ?inputLatitude) 
-            (user longitude ?inputLongitude))
-)
+            (user longitude ?inputLongitude)))
 
-; preprocessing minimum budget
-(defrule prepminbudget1
+;; PREPROCSSING MINIMUM BUDGET ;;
+(defrule prep-minbudget1
 	
 	?f <- (user minBudget "")
-=>
+  =>
 	(retract ?f)
-	(assert (user minBudget 0))
-)
-(defrule prepminbudget2
+	(assert (user minBudget 0)))
+
+(defrule prep-minbudget2
 	
 	?f <- (user minBudget ?n)
 	(test (eq (type ?n) STRING))
-=>
+  =>
 	(retract ?f)
-	(assert (user minBudget (string-to-field ?n)))
-)
+	(assert (user minBudget (string-to-field ?n))))
 
-; preprocessing maximum budget
-(defrule prepmaxbudget1
-	
+;; PREPROCSSING MAKSIMUM BUDGET ;;
+(defrule prep-maxbudget1
 	?f <- (user maxBudget "")
-=>
+  =>
 	(retract ?f)
-	(assert (user maxBudget 9999))
-)
-(defrule prepmaxbudget2
-	
+	(assert (user maxBudget 9999)))
+
+(defrule prep-maxbudget2
 	?f <- (user maxBudget ?n)
 	(test (eq (type ?n) STRING))
-=>
+  =>
 	(retract ?f)
-	(assert (user maxBudget (string-to-field ?n)))
-)
+	(assert (user maxBudget (string-to-field ?n))))
 
-; preprocessing latitude
-(defrule preplatitude1
-	
+;; PREPROCSSING LATITUDE ;;
+(defrule prep-latitude1
 	?f <- (user latitude "")
-=>
+  =>
 	(retract ?f)
-	(assert (user latitude -6.890621))
-)
-(defrule preplatitude2
-	
+	(assert (user latitude -6.890621)))
+
+(defrule prep-latitude2
 	?f <- (user latitude ?n)
 	(test (eq (type ?n) STRING))
-=>
+  =>
 	(retract ?f)
-	(assert (user latitude (string-to-field ?n)))
-)
+	(assert (user latitude (string-to-field ?n))))
 
-; preprocessing longitude
-(defrule preplongitude1
-	
+;; PREPROCSSING LONGITUDE ;;
+(defrule prep-longitude1
 	?f <- (user longitude "")
-=>
+  =>
 	(retract ?f)
-	(assert (user longitude 107.609543))
-)
-(defrule preplongitude2
-	
+	(assert (user longitude 107.609543)))
+
+(defrule prep-longitude2
 	?f <- (user longitude ?n)
 	(test (eq (type ?n) STRING))
-=>
+  =>
 	(retract ?f)
-	(assert (user longitude (string-to-field ?n)))
-)
+	(assert (user longitude (string-to-field ?n))))
 
-; inisialisasi checklist
-(defrule initialchecklist
+;; INISIASI CHECKLIST ;;
+(defrule initial-checklist
 	(restaurant ?name isSmoker ?)
-=>
+  =>
   (assert 	(checklist ?name cekIsSmoker "False")
   			(checklist ?name cekBudget "False")
   			(checklist ?name cekDresscode "False")
-  			(checklist ?name cekHasWifi "False"))
-)
+  			(checklist ?name cekHasWifi "False")))
 
-; inisialisasi skor
-(defrule initialscore
+;; INISIASI SKOR ;;
+(defrule initial-score
 	(restaurant ?rName latitude ?rLatitude)
 	(restaurant ?rName longitude ?rLongitude)
   	(user latitude ?uLatitude)
   	(user longitude ?uLongitude)
   	(test (or (eq (type ?uLatitude) FLOAT) (eq (type ?uLatitude) INTEGER)))
 	(test (or (eq (type ?uLongitude) FLOAT) (eq (type ?uLongitude) INTEGER)))
-=>
+  =>
   (assert	(score ?rName point 0)
-  			(score ?rName jarak (distance ?rLatitude ?rLongitude ?uLatitude ?uLongitude)))
-)
+  			(score ?rName jarak (distance ?rLatitude ?rLongitude ?uLatitude ?uLongitude))))
 
-; penilaian kriteria isSmoker
-(defrule checksmoke
+;; PENILAIAN KRITERIA isSmoker ;;
+(defrule check-smoke
 	(user isSmoker ?userSmoker)
 	(or (restaurant ?restaurantName isSmoker ?userSmoker) (test (eq ?userSmoker "")))
 	?fs <- (score ?restaurantName point ?n)
 	?fc <- (checklist ?restaurantName cekIsSmoker "False")
-=>
+  =>
 	(retract ?fs)
 	(retract ?fc)
 	(assert (score ?restaurantName point (+ 1 ?n)))
-	(assert (checklist ?restaurantName cekIsSmoker "True"))
-)
+	(assert (checklist ?restaurantName cekIsSmoker "True")))
 
-; penilaian kriteria minBudget dan maxBudget
-(defrule checkbudget
+;; PENILAIAN KRITERIA minBudget dan maxBudget ;;
+(defrule check-budget
 	(user minBudget ?userMinBudget)
 	(user maxBudget ?userMaxBudget)
 	(restaurant ?restaurantName minBudget ?restaurantMinBudget)
@@ -263,96 +250,132 @@
 	(test (and (>= ?userMaxBudget ?restaurantMinBudget) (<= ?userMinBudget ?restaurantMaxBudget)))
 	?fs <- (score ?restaurantName point ?n)
 	?fc <- (checklist ?restaurantName cekBudget "False")
-=>
+  =>
 	(retract ?fs)
 	(retract ?fc)
 	(assert (score ?restaurantName point (+ 1 ?n)))
-	(assert (checklist ?restaurantName cekBudget "True"))
-)
+	(assert (checklist ?restaurantName cekBudget "True")))
 
-; penilaian kriteria dresscode
-(defrule checkdresscode
+;; PENILAIAN KRITERIA dresscode ;;
+(defrule check-dresscode
 	(user dresscode ?userDresscode)
 	(or (restaurant ?restaurantName dresscode ?userDresscode) (test (eq ?userDresscode "")))
 	?fs <- (score ?restaurantName point ?n)
 	?fc <- (checklist ?restaurantName cekDresscode "False")
-=>
+  =>
 	(retract ?fs)
 	(retract ?fc)
 	(assert (score ?restaurantName point (+ 1 ?n)))
-	(assert (checklist ?restaurantName cekDresscode "True"))
-)
+	(assert (checklist ?restaurantName cekDresscode "True")))
 
-; penilaian kriteria hasWifi
+;; PENILAIAN KRITERIA hasWifi ;;
 (defrule checkwifi
 	(user hasWifi ?userWifi)
 	(or (restaurant ?restaurantName hasWifi ?userWifi) (test (eq ?userWifi "")))
 	?fs <- (score ?restaurantName point ?n)
 	?fc <- (checklist ?restaurantName cekHasWifi "False")
-=>
+  =>
 	(retract ?fs)
 	(retract ?fc)
 	(assert (score ?restaurantName point (+ 1 ?n)))
-	(assert (checklist ?restaurantName cekHasWifi "True"))
-)
+	(assert (checklist ?restaurantName cekHasWifi "True")))
 
+;; ASSERT URUTAN YANG AKAN DIPRINT ;;
 (defrule assert-unprinted4
   (declare (salience -100))
-	(print-sorted4)
 	(score ?nama point 4)
-=>
+  =>
 	(assert (unprinted4 ?nama)))
 
 (defrule assert-unprinted32
   (declare (salience -200))
-  (print-sorted32)
   (score ?nama point 3|2)
-=>
+  =>
   (assert (unprinted32 ?nama)))
 
 (defrule assert-unprinted10
   (declare (salience -300))
-  (print-sorted10)
   (score ?nama point 1|0)
-=>
+  =>
   (assert (unprinted10 ?nama)))
 
-
-(defrule retract-print-sorted
-  (declare (salience -10))
-  ?f <- (print-sorted)
+;; RETRACT FAKTA YANG AKAN DIPRINT ;;
+(defrule retract-print-sorted4
+  ?f <- (print-sorted4)
   =>
   (retract ?f))
 
-(defrule print-terdekat
-	(not (print-sorted4))
-	?u <- (unprinted4 ?nama)
-	(score ?nama point ?point)
-	(score ?nama jarak ?jarak)
-	(forall (and (unprinted4 ?n) (score ?n jarak ?r))
-			(test (>= ?r ?jarak)))
-=>
-	(retract ?u)
-	(printout t ?nama " " ?jarak " " ?point crlf))
+(defrule retract-print-sorted32
+  ?f <- (print-sorted32)
+  =>
+  (retract ?f))
 
-(defrule print-terdekat3
-	(not (print-sorted32))
-	?u <- (unprinted32 ?nama)
-	(score ?nama point ?point)
-	(score ?nama jarak ?jarak)
-	(forall (and (unprinted32 ?n) (score ?n jarak ?r))
-			(test (>= ?r ?jarak)))
-=>
-	(retract ?u)
-	(printout t ?nama " " ?jarak " " ?point crlf))
+(defrule retract-print-sorted10
+  ?f <- (print-sorted10)
+  =>
+  (retract ?f))
 
-(defrule print-terdekat0
-	(not (print-sorted10))
-	?u <- (unprinted10 ?nama)
-	(score ?nama point ?point)
-	(score ?nama jarak ?jarak)
-	(forall (and (unprinted10 ?n) (score ?n jarak ?r))
-			(test (>= ?r ?jarak)))
-=>
-	(retract ?u)
-	(printout t ?nama " " ?jarak " " ?point crlf))
+;; RULE UNTUK MENCETAK URUTAN ;;
+(defrule initial-print-number
+  =>
+  (assert (print-number 0)))
+
+(defrule print-message
+  (declare (salience -50))
+  (user name ?uName)
+  =>
+  (printout t crlf "Hello " ?uName ", here is our recommendation : " crlf))
+
+(defrule print-terdekat4
+  "Mencetak urutan dengan skor rekomendasi 4"
+  (declare (salience -150))
+  (not (print-sorted4))
+  ?u <- (unprinted4 ?nama)
+  ?fn <- (print-number ?pn)
+  (test (< ?pn ?*nPrint*))
+  (score ?nama point ?point)
+  (score ?nama jarak ?jarak)
+  (forall (and (unprinted4 ?n) (score ?n jarak ?r))
+      (test (>= ?r ?jarak)))
+  =>
+  (retract ?fn)
+  (retract ?u)
+  (assert (print-number (+ 1 ?pn)))
+  (bind ?newpn (+ 1 ?pn))
+  (printout t ?newpn ". " ?nama " : Very recommendable (Distance = " ?jarak " km)" crlf))
+
+(defrule print-terdekat32
+  "Mencetak urutan dengan skor rekomendasi 3 dan 2"
+  (declare (salience -250))
+  (not (print-sorted32))
+  ?u <- (unprinted32 ?nama)
+  ?fn <- (print-number ?pn)
+  (test (< ?pn ?*nPrint*))
+  (score ?nama point ?point)
+  (score ?nama jarak ?jarak)
+  (forall (and (unprinted32 ?n) (score ?n jarak ?r))
+      (test (>= ?r ?jarak)))
+  =>
+  (retract ?fn)
+  (retract ?u)
+  (assert (print-number (+ 1 ?pn)))
+  (bind ?newpn (+ 1 ?pn))
+  (printout t ?newpn ". " ?nama " : Recommendable (Distance = " ?jarak " km)" crlf))
+
+(defrule print-terdekat10
+  "Mencetak urutan dengan skor rekomendasi 1 dan 0"
+  (declare (salience -350))
+  (not (print-sorted10))
+  ?u <- (unprinted10 ?nama)
+  ?fn <- (print-number ?pn)
+  (test (< ?pn ?*nPrint*))
+  (score ?nama point ?point)
+  (score ?nama jarak ?jarak)
+  (forall (and (unprinted10 ?n) (score ?n jarak ?r))
+      (test (>= ?r ?jarak)))
+  =>
+  (retract ?fn)
+  (retract ?u)
+  (assert (print-number (+ 1 ?pn)))
+  (bind ?newpn (+ 1 ?pn))
+  (printout t ?newpn ". " ?nama " : Not recommendable (Distance = " ?jarak " km)" crlf))
